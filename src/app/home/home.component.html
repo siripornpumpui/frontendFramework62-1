@@ -1,109 +1,60 @@
-<div class="wrapper">
-
-  <!-- Sidebar -->
-  <div class="wrapper">
-    <!-- Sidebar -->
-    <nav id="sidebar">
-      <div class="sidebar-header">
-        <h3>Bootstrap Sidebar</h3>
-      </div>
-
-      <ul class="list-unstyled components">
-        <p>Dummy Heading</p>
-        <li class="active">
-          <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Home</a>
-          <ul class="collapse list-unstyled" id="homeSubmenu">
-            <li>
-              <a href="#">Home 1</a>
-            </li>
-            <li>
-              <a href="#">Home 2</a>
-            </li>
-            <li>
-              <a href="#">Home 3</a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          <a href="#">About</a>
-        </li>
-        <li>
-          <a href="#pageSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Pages</a>
-          <ul class="collapse list-unstyled" id="pageSubmenu">
-            <li>
-              <a href="#">Page 1</a>
-            </li>
-            <li>
-              <a href="#">Page 2</a>
-            </li>
-            <li>
-              <a href="#">Page 3</a>
-            </li>
-          </ul>
-        </li>
-        <li>
-          <a href="#">Portfolio</a>
-        </li>
-        <li>
-          <a href="#">Contact</a>
-        </li>
-      </ul>
-    </nav>
-    <!-- Page Content -->
-    <div id="content">
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-
-          <button type="button" id="sidebarCollapse" class="btn btn-info">
-            <i class="fas fa-align-left"></i>
-            <span>Toggle Sidebar</span>
-          </button>
-        </div>
-      </nav>
-      <h2>Collapsible Sidebar Using Bootstrap 4</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur.
-        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </p>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur.
-        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </p>
-
-      <div class="line"></div>
-
-      <h2>Lorem Ipsum Dolor</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur.
-        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </p>
-
-      <div class="line"></div>
-
-      <h2>Lorem Ipsum Dolor</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur.
-        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </p>
-
-      <div class="line"></div>
-
-      <h3>Lorem Ipsum Dolor</h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore
-        magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-        pariatur.
-        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-      </p>
-    </div>
-  </div>
-
-</div>
+import { Component, OnInit } from "@angular/core";
+import * as $ from "jquery";
+import { BackendService } from '../backend.service';
+import { Router } from '@angular/router';
+import Swal from 'sweetalert2'
+@Component({
+selector: "app-home",
+templateUrl: "./home.component.html",
+styleUrls: ["./home.component.scss"]
+})
+export class HomeComponent implements OnInit {
+totalUser = 0;
+totalPage = 0;
+totalInPagination = [];
+limit = 10;
+currentPage = 1;
+users = [];
+constructor(private router: Router, private backendService: BackendService) { }
+ngOnInit() {
+$(document).ready(function () {
+$('#sidebarCollapse').on('click', function () {
+$('#sidebar').toggleClass('active');
+});
+});
+this.backendService.countAllUser().subscribe((data: any) => {
+console.log(data);
+this.totalUser = data.total_item;
+this.totalPage = Math.ceil(Number(data.total_item) / this.limit);
+this.totalInPagination = Array(
+Math.ceil(Number(data.total_item) / this.limit) > 10
+? 10
+: Math.ceil(Number(data.total_item) / this.limit)
+);
+});
+this.listUserPagination();
+}
+listUserPagination() {
+this.backendService
+.getListUser(this.currentPage)
+.subscribe((data: any) => {
+console.log(data);
+this.users = data;
+});
+}
+gotoPage($event, page) {
+$event.preventDefault();
+this.currentPage = page;
+this.listUserPagination();
+}
+nextPage($event) {
+$event.preventDefault();
+this.currentPage =
+this.currentPage + 1 > this.totalPage
+? this.currentPage
+: this.currentPage + 1;
+this.listUserPagination();
+}
+prevPage($event) {
+$event.preventDefault();
+this.currentPage = this.currentPage - 1 < 1 ? 1 : this.currentPage - 1; this.listUserPagination(); } }
